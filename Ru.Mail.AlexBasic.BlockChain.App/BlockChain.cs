@@ -12,6 +12,8 @@ namespace Ru.Mail.AlexBasic.BlockChain.App
         private IList<Block> _blocks;
         private byte[] _currentTransaction;
 
+        public IEnumerable<Block> Blocks { get { return _blocks; } }
+
         /// <summary>
         /// Create chain w one block genesis
         /// </summary>
@@ -20,14 +22,29 @@ namespace Ru.Mail.AlexBasic.BlockChain.App
             _blocks = new List<Block>();
             _currentTransaction = new byte[0];
 
-            var genesisBlockProof = 10;
-            var genesisBlockHash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
-
             //add genesis block
-            NewBlock(genesisBlockHash, genesisBlockProof);
+            CreateGenesisBlock();
         }
 
-        public Block NewBlock(string previousBlockHash, int proof)
+        private void CreateGenesisBlock()
+        {
+            var genesisBlockProof = 10;
+            var genesisBlockHash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+            var block = new Block
+            {
+                Index = _blocks.Count,
+                TimeStamp = DateTimeOffset.Now,
+                Data = _currentTransaction,
+                Proof = genesisBlockProof,
+                PreviousBlockHash = genesisBlockHash
+            };
+
+            _currentTransaction = new byte[0];
+
+            _blocks.Add(block);
+        }
+
+        public Block NewBlock(int proof)
         {
             var block = new Block 
             {
@@ -35,7 +52,7 @@ namespace Ru.Mail.AlexBasic.BlockChain.App
                 TimeStamp = DateTimeOffset.Now,
                 Data = _currentTransaction,
                 Proof = proof,
-                PreviousBlockHash = previousBlockHash
+                PreviousBlockHash = Hash(_blocks.Last())
             };
 
             _currentTransaction = new byte[0];

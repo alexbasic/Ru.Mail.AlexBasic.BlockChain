@@ -12,7 +12,7 @@ namespace Ru.Mail.AlexBasic.BlockChain.App.Test
     public class Class1
     {
         [Test]
-        public void CreateGenesisBlock() 
+        public void CreateGenesisBlock()
         {
             var chain = new BlockChain();
 
@@ -26,10 +26,10 @@ namespace Ru.Mail.AlexBasic.BlockChain.App.Test
         }
 
         [Test]
-        public void ProofOfWorkTest() 
+        public void ProofOfWorkTest()
         {
             var lastProof = 6432;
-            
+
             var proof = BlockChain.ProofOfWork(lastProof);
 
 
@@ -48,7 +48,7 @@ namespace Ru.Mail.AlexBasic.BlockChain.App.Test
         }
 
         [Test]
-        public void CreateFirstBlockAfterGenesis() 
+        public void CreateFirstBlockAfterGenesis()
         {
             var chain = new BlockChain();
 
@@ -56,12 +56,15 @@ namespace Ru.Mail.AlexBasic.BlockChain.App.Test
 
             Assert.AreEqual(0, genesisBlock.Index);
             Assert.AreEqual(
-                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", 
+                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
                 genesisBlock.PreviousBlockHash);
 
             var blockData = Encoding.UTF8.GetBytes("Hello world!");
 
             var index = chain.NewTransaction(blockData);
+
+            var proof = BlockChain.ProofOfWork(chain.LastBlock().Proof);
+            chain.NewBlock(proof);
 
             var firstAfterGenesis = chain.LastBlock();
 
@@ -70,17 +73,23 @@ namespace Ru.Mail.AlexBasic.BlockChain.App.Test
         }
 
         [Test]
-        public void MineTest() 
+        public void MineTest()
         {
             var chain = new BlockChain();
-            
-            //find next proof
-            var last_block = chain.LastBlock(); 
-            var last_proof = last_block.Proof;
-            var proof = BlockChain.ProofOfWork(last_proof);
 
-            //add to chain
-            var block = chain.NewBlock("prev hash", proof);
+            for (var i = 0; i < 25; i++)
+            {
+                //find next proof
+                var last_block = chain.LastBlock();
+                var last_proof = last_block.Proof;
+                var proof = BlockChain.ProofOfWork(last_proof);
+
+                //add to chain
+                var block = chain.NewBlock(proof);
+            }
+
+            Assert.AreEqual(26, chain.Blocks.Select(x => x.PreviousBlockHash).Distinct().Count());
+            Assert.AreEqual(26, chain.Blocks.Select(x => x.Proof).Distinct().Count());
         }
     }
 }
